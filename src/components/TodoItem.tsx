@@ -23,7 +23,6 @@ export const TodoItem: React.FC<Props> = ({
       key={todo.id}
       // eslint-disable-next-line react/jsx-no-comment-textnodes
     >
-      // eslint-disable-next-line jsx-a11y/label-has-associated-control
       <label className="todo__status-label" htmlFor={`todo-${todo.id}`}>
         <input
           id={`todo-${todo.id}`}
