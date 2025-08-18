@@ -4,13 +4,13 @@ import { Todo } from '../types/Todo';
 type Props = {
   todos: Todo[];
   onFilterChange: (filter: 'all' | 'active' | 'completed') => void;
-  setCurrentFilter: 'all' | 'active' | 'completed';
+  currentFilter: 'all' | 'active' | 'completed';
   onClearCompleted: () => void;
 };
 
 export const Footer: React.FC<Props> = ({
   todos,
-  setCurrentFilter,
+  currentFilter,
   onFilterChange,
   onClearCompleted,
 }) => {
@@ -24,7 +24,7 @@ export const Footer: React.FC<Props> = ({
       <nav className="filter" data-cy="Filter">
         <a
           href="#/"
-          className={`filter__link ${setCurrentFilter === 'all' ? 'selected' : ''}`}
+          className={`filter__link ${currentFilter === 'all' ? 'selected' : ''}`}
           data-cy="FilterLinkAll"
           onClick={() => onFilterChange('all')}
         >
@@ -33,7 +33,7 @@ export const Footer: React.FC<Props> = ({
 
         <a
           href="#/active"
-          className={`filter__link ${setCurrentFilter === 'active' ? 'selected' : ''}`}
+          className={`filter__link ${currentFilter === 'active' ? 'selected' : ''}`}
           data-cy="FilterLinkActive"
           onClick={() => onFilterChange('active')}
         >
@@ -42,7 +42,7 @@ export const Footer: React.FC<Props> = ({
 
         <a
           href="#/completed"
-          className={`filter__link ${setCurrentFilter === 'completed' ? 'selected' : ''}`}
+          className={`filter__link ${currentFilter === 'completed' ? 'selected' : ''}`}
           data-cy="FilterLinkCompleted"
           onClick={() => onFilterChange('completed')}
         >

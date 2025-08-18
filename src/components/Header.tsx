@@ -24,7 +24,8 @@ export const Header: React.FC<Props> = ({
     if (!disabled) {
       inputRef.current?.focus();
     }
-  }, [disabled, inputRef]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [disabled]);
 
   const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();

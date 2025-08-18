@@ -11,11 +11,11 @@ import { ErrorNotification } from './components/ErrorNotification';
 
 function getFilteredTodos(
   currentTodos: Todo[],
-  setCurrentFilter: 'all' | 'active' | 'completed',
+  currentFilter: 'all' | 'active' | 'completed',
 ): Todo[] {
   const filteredTodos = [...currentTodos];
 
-  switch (setCurrentFilter) {
+  switch (currentFilter) {
     case 'active':
       return filteredTodos.filter(todo => !todo.completed);
     case 'completed':
@@ -183,7 +183,7 @@ export const App: React.FC = () => {
         {todos.length > 0 && (
           <Footer
             todos={todos}
-            setCurrentFilter={filter}
+            currentFilter={filter}
             onFilterChange={setFilter}
             onClearCompleted={handleDeleteCompletedTodos}
           />
