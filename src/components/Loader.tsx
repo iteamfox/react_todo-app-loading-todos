@@ -12,9 +12,7 @@ export const Loader: React.FC<Props> = ({ todoId, updatingTodoIds }) => {
   return (
     <div
       data-cy="TodoLoader"
-      className={classNames('modal overlay', {
-        'is-active': isUpdating,
-      })}
+      className={classNames('modal overlay', { 'is-active': isUpdating })}
     >
       <div className="modal-background has-background-white-ter" />
       <div className="loader" />
