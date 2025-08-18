@@ -5,7 +5,6 @@ import { TodoItem } from './TodoItem';
 type Props = {
   todos: Todo[];
   toggleTodo: (todo: Todo) => void;
-  isLoading: boolean;
   updatingTodoIds: number[];
   tempTodo: Todo | null;
   onDelete: (todoId: number) => void;
@@ -14,21 +13,19 @@ type Props = {
 export const TodoList: React.FC<Props> = ({
   todos,
   toggleTodo,
-  isLoading,
   updatingTodoIds,
   tempTodo,
   onDelete,
 }) => {
   return (
-    <section className="todoapp__main" data-cy="TodoList">
+    <div className="todoapp__list">
       {todos.map(todo => (
         <TodoItem
           key={todo.id}
           todo={todo}
           toggleTodo={toggleTodo}
-          isLoading={isLoading}
-          updatingTodoIds={updatingTodoIds}
           onDelete={onDelete}
+          isUpdating={updatingTodoIds.includes(todo.id)}
         />
       ))}
 
@@ -36,11 +33,10 @@ export const TodoList: React.FC<Props> = ({
         <TodoItem
           todo={tempTodo}
           toggleTodo={() => {}}
-          isLoading={isLoading}
-          updatingTodoIds={updatingTodoIds}
           onDelete={() => {}}
+          isUpdating={true}
         />
       )}
-    </section>
+    </div>
   );
 };

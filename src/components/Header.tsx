@@ -1,50 +1,43 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect } from 'react';
 import { Todo } from '../types/Todo';
 
 type Props = {
+  onAdd: (title: string) => void;
   todos: Todo[];
   isLoading: boolean;
-  disabled: boolean;
-  onAdd: (title: string) => void;
-  onToggleAll: () => void;
+  inputValue: string;
+  setInputValue: (value: string) => void;
+  inputRef: React.RefObject<HTMLInputElement>;
 };
 
 export const Header: React.FC<Props> = ({
+  onAdd,
   todos,
   isLoading,
-  disabled,
-  onAdd,
-  onToggleAll,
+  inputValue,
+  setInputValue,
+  inputRef,
 }) => {
-  const [inputValue, setInputValue] = useState('');
-  const inputRef = useRef<HTMLInputElement>(null);
-
   useEffect(() => {
-    if (!disabled) {
+    if (!isLoading) {
       inputRef.current?.focus();
     }
-  }, [disabled]);
+  }, [isLoading, inputRef]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const title = inputValue.trim();
-
-    if (!title) {
-      return;
-    }
-
-    onAdd(title);
-    setInputValue('');
-    inputRef.current?.focus();
+    onAdd(inputValue);
   };
 
   return (
     <header className="todoapp__header">
       <button
         type="button"
-        className={`todoapp__toggle-all ${todos.length > 0 && todos.every(todo => todo.completed) ? 'active' : ''}`}
-        onClick={onToggleAll}
-        disabled={isLoading}
+        className={`todoapp__toggle-all ${
+          todos.length > 0 && todos.every(todo => todo.completed)
+            ? 'active'
+            : ''
+        }`}
       />
       <form onSubmit={handleSubmit}>
         <input

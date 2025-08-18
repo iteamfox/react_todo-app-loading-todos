@@ -6,25 +6,27 @@ import { Loader } from './Loader';
 type Props = {
   todo: Todo;
   toggleTodo: (todo: Todo) => void;
-  isLoading: boolean;
-  updatingTodoIds: number[];
   onDelete: (todoId: number) => void;
+  isUpdating: boolean;
 };
 
 export const TodoItem: React.FC<Props> = ({
   todo,
   toggleTodo,
-  updatingTodoIds,
   onDelete,
+  isUpdating,
 }) => {
   return (
     <div
       data-cy="Todo"
       className={`todo ${todo.completed ? 'completed' : ''}`}
       key={todo.id}
+      // eslint-disable-next-line react/jsx-no-comment-textnodes
     >
-      <label className="todo__status-label">
+      // eslint-disable-next-line jsx-a11y/label-has-associated-control
+      <label className="todo__status-label" htmlFor={`todo-${todo.id}`}>
         <input
+          id={`todo-${todo.id}`}
           data-cy="TodoStatus"
           type="checkbox"
           className="todo__status"
@@ -32,12 +34,9 @@ export const TodoItem: React.FC<Props> = ({
           onChange={() => toggleTodo(todo)}
         />
       </label>
-
       <span data-cy="TodoTitle" className="todo__title">
         {todo.title}
       </span>
-
-      {/* Remove button appears only on hover */}
       <button
         type="button"
         className="todo__remove"
@@ -46,9 +45,7 @@ export const TodoItem: React.FC<Props> = ({
       >
         ×
       </button>
-
-      {/* overlay will cover the todo while it is being deleted or updated */}
-      <Loader todoId={todo.id} updatingTodoIds={updatingTodoIds} />
+      <Loader isActive={isUpdating} />
     </div>
   );
 };
