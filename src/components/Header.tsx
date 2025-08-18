@@ -1,36 +1,40 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Todo } from '../types/Todo';
 
 type Props = {
-  onAdd: (title: string) => void;
   todos: Todo[];
   isLoading: boolean;
   disabled: boolean;
-  inputValue: string;
-  setInputValue: (value: string) => void;
-  inputRef: React.RefObject<HTMLInputElement>;
+  onAdd: (title: string) => void;
+  onToggleAll: () => void;
 };
 
 export const Header: React.FC<Props> = ({
-  onAdd,
   todos,
   isLoading,
   disabled,
-  inputValue,
-  setInputValue,
-  inputRef,
+  onAdd,
+  onToggleAll,
 }) => {
+  const [inputValue, setInputValue] = useState('');
+  const inputRef = useRef<HTMLInputElement>(null);
+
   useEffect(() => {
     if (!disabled) {
       inputRef.current?.focus();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [disabled]);
 
-  const onSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onAdd(inputValue);
+    const title = inputValue.trim();
 
+    if (!title) {
+      return;
+    }
+
+    onAdd(title);
+    setInputValue('');
     inputRef.current?.focus();
   };
 
@@ -38,17 +42,17 @@ export const Header: React.FC<Props> = ({
     <header className="todoapp__header">
       <button
         type="button"
-        className={`todoapp__toggle-all ${todos.every(todo => todo.completed) && `active`}`}
-        data-cy="ToggleAllButton"
+        className={`todoapp__toggle-all ${todos.length > 0 && todos.every(todo => todo.completed) ? 'active' : ''}`}
+        onClick={onToggleAll}
+        disabled={isLoading}
       />
-      <form onSubmit={onSubmit}>
+      <form onSubmit={handleSubmit}>
         <input
           data-cy="NewTodoField"
           type="text"
           className="todoapp__new-todo"
           value={inputValue}
           onChange={e => setInputValue(e.target.value)}
-          onFocus={() => true}
           disabled={isLoading}
           ref={inputRef}
         />

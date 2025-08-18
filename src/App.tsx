@@ -1,6 +1,4 @@
-/* eslint-disable jsx-a11y/label-has-associated-control */
-/* eslint-disable jsx-a11y/control-has-associated-label */
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { UserWarning } from './UserWarning';
 import * as todoService from './api/todos';
 import { Header } from './components/Header';
@@ -10,31 +8,26 @@ import { TodoList } from './components/TodoList';
 import { ErrorNotification } from './components/ErrorNotification';
 
 function getFilteredTodos(
-  currentTodos: Todo[],
-  currentFilter: 'all' | 'active' | 'completed',
+  todos: Todo[],
+  filter: 'all' | 'active' | 'completed',
 ): Todo[] {
-  const filteredTodos = [...currentTodos];
-
-  switch (currentFilter) {
+  switch (filter) {
     case 'active':
-      return filteredTodos.filter(todo => !todo.completed);
+      return todos.filter(todo => !todo.completed);
     case 'completed':
-      return filteredTodos.filter(todo => todo.completed);
-    case 'all':
-      return filteredTodos;
+      return todos.filter(todo => todo.completed);
     default:
-      return [];
+      return todos;
   }
 }
 
 export const App: React.FC = () => {
   const [todos, setTodos] = useState<Todo[]>([]);
+  const [filter, setFilter] = useState<'all' | 'active' | 'completed'>('all');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [tempTodo, setTempTodo] = useState<Todo | null>(null);
-  const [filter, setFilter] = useState<'all' | 'active' | 'completed'>('all');
   const [updatingTodoIds, setUpdatingTodoIds] = useState<number[]>([]);
-  const [inputValue, setInputValue] = useState('');
+  const [tempTodo, setTempTodo] = useState<Todo | null>(null);
 
   useEffect(() => {
     if (!todoService.USER_ID) {
@@ -52,17 +45,11 @@ export const App: React.FC = () => {
   }, []);
 
   const handleAddTodo = async (title: string) => {
-    if (!title.trim()) {
-      setError('Title should not be empty');
-
-      return;
-    }
-
     setIsLoading(true);
 
     const newTempTodo: Todo = {
       id: 0,
-      title: title.trim(),
+      title,
       completed: false,
       userId: todoService.USER_ID,
     };
@@ -71,18 +58,9 @@ export const App: React.FC = () => {
     setUpdatingTodoIds(ids => [...ids, 0]);
 
     todoService
-      .addTodo({
-        userId: todoService.USER_ID,
-        title: title.trim(),
-        completed: false,
-      })
-      .then(newTodo => {
-        setTodos(currentTodos => [...currentTodos, newTodo]);
-        setInputValue('');
-      })
-      .catch(() => {
-        setError('Unable to add a todo');
-      })
+      .addTodo({ userId: todoService.USER_ID, title, completed: false })
+      .then(newTodo => setTodos(prev => [...prev, newTodo]))
+      .catch(() => setError('Unable to add a todo'))
       .finally(() => {
         setIsLoading(false);
         setTempTodo(null);
@@ -90,31 +68,43 @@ export const App: React.FC = () => {
       });
   };
 
-  const handleDeleteTodo = async (todoId: number) => {
+  const handleDeleteTodo = async (id: number) => {
     setIsLoading(true);
-    setUpdatingTodoIds(prevId => [...prevId, todoId]);
+    setUpdatingTodoIds(prev => [...prev, id]);
 
     try {
-      await todoService.deleteTodo(todoId);
-
-      setTodos(currentTodos => currentTodos.filter(todo => todo.id !== todoId));
+      await todoService.deleteTodo(id);
+      setTodos(prev => prev.filter(todo => todo.id !== id));
     } catch {
       setError('Unable to delete a todo');
     } finally {
       setIsLoading(false);
-      setUpdatingTodoIds(prevId => prevId.filter(id => id !== todoId));
+      setUpdatingTodoIds(prev => prev.filter(todoId => todoId !== id));
     }
   };
 
-  const inputRef = useRef<HTMLInputElement>(null);
+  const handleToggleTodo = async (todo: Todo) => {
+    setIsLoading(true);
+    setUpdatingTodoIds(ids => [...ids, todo.id]);
+
+    try {
+      const updated = await todoService.updateTodo(todo.id, !todo.completed);
+
+      setTodos(prev => prev.map(t => (t.id === todo.id ? updated : t)));
+    } catch {
+      setError('Unable to update a todo');
+    } finally {
+      setIsLoading(false);
+      setUpdatingTodoIds(ids => ids.filter(id => id !== todo.id));
+    }
+  };
 
   const handleDeleteCompletedTodos = async () => {
-    const completedTodos = todos.filter(todo => todo.completed);
+    const completed = todos.filter(t => t.completed);
 
     await Promise.all(
-      completedTodos.map(async todo => {
+      completed.map(async todo => {
         setUpdatingTodoIds(prev => [...prev, todo.id]);
-
         try {
           await todoService.deleteTodo(todo.id);
           setTodos(prev => prev.filter(t => t.id !== todo.id));
@@ -125,31 +115,16 @@ export const App: React.FC = () => {
         }
       }),
     );
-
-    if (inputRef.current && !isLoading) {
-      inputRef.current.focus();
-    }
   };
 
-  const handleToggleTodo = async (todo: Todo) => {
-    setIsLoading(true);
-    setUpdatingTodoIds(ids => [...ids, todo.id]);
+  const handleToggleAll = async () => {
+    const shouldCompleteAll = !todos.every(todo => todo.completed);
 
-    try {
-      const updatedTodo = await todoService.updateTodo(
-        todo.id,
-        !todo.completed,
-      );
-
-      setTodos(currentTodos =>
-        currentTodos.map(t => (t.id === todo.id ? updatedTodo : t)),
-      );
-    } catch {
-      setError('Unable to update a todo');
-    } finally {
-      setIsLoading(false);
-      setUpdatingTodoIds(ids => ids.filter(id => id !== todo.id));
-    }
+    await Promise.all(
+      todos.map(todo =>
+        handleToggleTodo({ ...todo, completed: shouldCompleteAll }),
+      ),
+    );
   };
 
   if (!todoService.USER_ID) {
@@ -161,16 +136,13 @@ export const App: React.FC = () => {
   return (
     <div className="todoapp">
       <h1 className="todoapp__title">todos</h1>
-
       <div className="todoapp__content">
         <Header
-          onAdd={handleAddTodo}
           todos={todos}
           isLoading={isLoading}
           disabled={isLoading}
-          inputValue={inputValue}
-          setInputValue={setInputValue}
-          inputRef={inputRef}
+          onAdd={handleAddTodo}
+          onToggleAll={handleToggleAll}
         />
         <TodoList
           todos={visibleTodos}
@@ -188,13 +160,8 @@ export const App: React.FC = () => {
             onClearCompleted={handleDeleteCompletedTodos}
           />
         )}
-
-        {/* Hide the footer if there are no todos */}
+        <ErrorNotification errorMessage={error} onClose={() => setError('')} />
       </div>
-
-      {/* DON'T use conditional rendering to hide the notification */}
-      {/* Add the 'hidden' class to hide the message smoothly */}
-      <ErrorNotification errorMessage={error} onClose={() => setError('')} />
     </div>
   );
 };
