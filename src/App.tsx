@@ -96,9 +96,15 @@ export const App: React.FC = () => {
         />
         {todos.length !== 0 && (
           <Footer
-            todos={todos}
+            itemsLeft={todos.filter(todo => !todo.completed).length}
+            hasCompleted={todos.some(todo => todo.completed)}
             currentFilter={filter}
             onFilterChange={setFilter}
+            onClearCompleted={() =>
+              setTodos(currentTodos =>
+                currentTodos.filter(todo => !todo.completed),
+              )
+            }
           />
         )}
       </div>
