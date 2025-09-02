@@ -36,14 +36,14 @@ export const App: React.FC = () => {
       .getTodos()
       .then(setTodos)
       .catch(() => {
-        setError('Unable to load todos');
+        setError(ErrorType.Load);
       })
       .finally(() => setIsLoading(false));
   }, []);
 
   const handleAddTodo = async (title: string) => {
     if (!title.trim()) {
-      setError('Title should not be empty');
+      setError(ErrorType.EmptyTitle);
 
       return;
     }
@@ -55,7 +55,7 @@ export const App: React.FC = () => {
 
       setTodos(currentTodos => [...currentTodos, newTodo]);
     } catch {
-      setError('Unable to add a todo');
+      setError(ErrorType.Add);
     }
   };
 
@@ -70,7 +70,7 @@ export const App: React.FC = () => {
         currentTodos.map(t => (t.id === todo.id ? updatedTodo : t)),
       );
     } catch {
-      setError('Unable to update a todo');
+      setError(ErrorType.Update);
     }
   };
 
