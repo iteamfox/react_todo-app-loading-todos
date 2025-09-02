@@ -1,17 +1,21 @@
 import { useState } from 'react';
-import { Todo } from '../types/Todo';
 
 type Props = {
   onAdd: (title: string) => void;
-  todos: Todo[];
+  allCompleted: boolean;
 };
 
-export const Header: React.FC<Props> = ({ onAdd, todos }) => {
+export const Header: React.FC<Props> = ({ onAdd, allCompleted }) => {
   const [value, setValue] = useState('');
 
   const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onAdd(value);
+    if (!value.trim()) {
+      return;
+    }
+
+    onAdd(value.trim());
+    setValue('');
   };
 
   return (
@@ -19,7 +23,7 @@ export const Header: React.FC<Props> = ({ onAdd, todos }) => {
       {/* this button should have `active` class only if all todos are completed */}
       <button
         type="button"
-        className={`todoapp__toggle-all ${todos.every(todo => todo.completed) && `active`}`}
+        className={`todoapp__toggle-all ${allCompleted ? 'active' : ''}`}
         data-cy="ToggleAllButton"
       />
 
@@ -32,7 +36,7 @@ export const Header: React.FC<Props> = ({ onAdd, todos }) => {
           placeholder="What needs to be done?"
           value={value}
           onChange={e => setValue(e.target.value)}
-          onFocus={() => true}
+          // onFocus={() => true}
         />
       </form>
     </header>
